@@ -17,7 +17,7 @@ type Review {
 }
 
 type Query {
-    getProducts(category: String, minPrice: Float, maxPrice: Float): [Product]
+    getProducts(category: String, minPrice: Float, maxPrice: Float, page: Int, size: Int): [Product]
     getProductById(id: ID!): Product
 
     getReviews(productId: ID!): [Review]

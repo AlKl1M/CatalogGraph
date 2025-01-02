@@ -13,8 +13,14 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public Flux<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Flux<Product> getProductsFiltered(String category, Float minPrice, Float maxPrice, int page, int size) {
+
+        return productRepository.findAll()
+                .filter(product -> (category == null || product.getCategory().equals(category)) &&
+                        (minPrice == null || product.getPrice() >= minPrice) &&
+                        (maxPrice == null || product.getPrice() <= maxPrice))
+                .skip((long) page * size)
+                .take(size);
     }
 
     public Mono<Product> getProductById(String id) {
