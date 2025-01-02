@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Controller
 @RequiredArgsConstructor
@@ -16,27 +16,28 @@ public class ProductController {
     private final ProductService productService;
 
     @QueryMapping
-    public List<Product> getProducts() {
+    public Flux<Product> getProducts() {
         return productService.getAllProducts();
     }
 
     @QueryMapping
-    public Product getProductById(String id) {
-        return productService.getProductById(id).orElse(null);
+    public Mono<Product> getProductById(String id) {
+        return productService.getProductById(id);
     }
 
     @MutationMapping
-    public Product addProduct(Product product) {
+    public Mono<Product> addProduct(Product product) {
         return productService.addProduct(product);
     }
 
     @MutationMapping
-    public Product updateProduct(String id, Product product) {
+    public Mono<Product> updateProduct(String id, Product product) {
         return productService.updateProduct(id, product);
     }
 
     @MutationMapping
-    public Boolean deleteProduct(String id) {
+    public Mono<Boolean> deleteProduct(String id) {
         return productService.deleteProduct(id);
     }
+
 }

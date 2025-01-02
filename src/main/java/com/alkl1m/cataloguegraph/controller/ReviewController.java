@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Controller
 @RequiredArgsConstructor
@@ -16,27 +16,27 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @QueryMapping
-    public List<Review> getReviews(String productId) {
+    public Flux<Review> getReviews(String productId) {
         return reviewService.getReviewsByProductId(productId);
     }
 
     @QueryMapping
-    public Review getReviewById(String id) {
-        return reviewService.getReviewById(id).orElse(null);
+    public Mono<Review> getReviewById(String id) {
+        return reviewService.getReviewById(id);
     }
 
     @MutationMapping
-    public Review addReview(Review review) {
+    public Mono<Review> addReview(Review review) {
         return reviewService.addReview(review);
     }
 
     @MutationMapping
-    public Review updateReview(String id, Review review) {
+    public Mono<Review> updateReview(String id, Review review) {
         return reviewService.updateReview(id, review);
     }
 
     @MutationMapping
-    public Boolean deleteReview(String id) {
+    public Mono<Boolean> deleteReview(String id) {
         return reviewService.deleteReview(id);
     }
 

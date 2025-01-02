@@ -1,14 +1,13 @@
 package com.alkl1m.cataloguegraph.repository;
 
 import com.alkl1m.cataloguegraph.entity.Review;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
 
 @Repository
-public interface ReviewRepository extends MongoRepository<Review, String> {
+public interface ReviewRepository extends ReactiveMongoRepository<Review, String> {
 
-    List<Review> findByProductId(String productId);
+    Flux<Review> findByProductId(String productId);
 
 }

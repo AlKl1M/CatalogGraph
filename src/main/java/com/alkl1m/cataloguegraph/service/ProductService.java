@@ -4,9 +4,8 @@ import com.alkl1m.cataloguegraph.entity.Product;
 import com.alkl1m.cataloguegraph.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -14,33 +13,40 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<Product> getAllProducts() {
+    public Flux<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    public Optional<Product> getProductById(String id) {
+    public Mono<Product> getProductById(String id) {
         return productRepository.findById(id);
     }
 
-    public Product addProduct(Product product) {
+    public Mono<Product> addProduct(Product product) {
         return productRepository.save(product);
     }
 
-    public Product updateProduct(String id, Product updatedProduct) {
-        return productRepository.findById(id).map(product -> {
-            product.setName(updatedProduct.getName());
-            product.setDescription(updatedProduct.getDescription());
-            product.setPrice(updatedProduct.getPrice());
-            product.setCategory(updatedProduct.getCategory());
-            return productRepository.save(product);
-        }).orElseThrow(() -> new RuntimeException("Product not found"));
+    public Mono<Product> updateProduct(String id, Product updatedProduct) {
+        return productRepository.findById(id)
+                .switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+                .flatMap(product -> {
+                    product.setName(updatedProduct.getName());
+                    product.setPrice(updatedProduct.getPrice());
+                    product.setDescription(updatedProduct.getDescription());
+                    product.setCategory(updatedProduct.getCategory());
+                    return productRepository.save(product);
+                });
     }
 
-    public boolean deleteProduct(String id) {
-        if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public Mono<Boolean> deleteProduct(String id) {
+        return productRepository.existsById(id)
+                .switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+                .flatMap(exist -> {
+                    if (exist) {
+                        return productRepository.deleteById(id)
+                                .then(Mono.just(true));
+                    } else {
+                        return Mono.just(false);
+                    }
+                });
     }
 }

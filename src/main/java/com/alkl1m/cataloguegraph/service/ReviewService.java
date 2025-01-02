@@ -4,9 +4,8 @@ import com.alkl1m.cataloguegraph.entity.Review;
 import com.alkl1m.cataloguegraph.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -14,31 +13,37 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
 
-    public List<Review> getReviewsByProductId(String productId) {
+    public Flux<Review> getReviewsByProductId(String productId) {
         return reviewRepository.findByProductId(productId);
     }
 
-    public Optional<Review> getReviewById(String id) {
+    public Mono<Review> getReviewById(String id) {
         return reviewRepository.findById(id);
     }
 
-    public Review addReview(Review review) {
+    public Mono<Review> addReview(Review review) {
         return reviewRepository.save(review);
     }
 
-    public Review updateReview(String id, Review updatedReview) {
-        return reviewRepository.findById(id).map(review -> {
-            review.setRating(updatedReview.getRating());
-            review.setComment(updatedReview.getComment());
-            return reviewRepository.save(review);
-        }).orElseThrow(() -> new RuntimeException("Review not found"));
+    public Mono<Review> updateReview(String id, Review updatedReview) {
+        return reviewRepository.findById(id)
+                .flatMap(existingReview -> {
+                    existingReview.setRating(updatedReview.getRating());
+                    existingReview.setComment(updatedReview.getComment());
+                    return reviewRepository.save(existingReview);
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Review not found")));
     }
 
-    public boolean deleteReview(String id) {
-        if (reviewRepository.existsById(id)) {
-            reviewRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public Mono<Boolean> deleteReview(String id) {
+        return reviewRepository.existsById(id)
+                .flatMap(exists -> {
+                    if (exists) {
+                        return reviewRepository.deleteById(id)
+                                .then(Mono.just(true));
+                    } else {
+                        return Mono.just(false);
+                    }
+                });
     }
 }
