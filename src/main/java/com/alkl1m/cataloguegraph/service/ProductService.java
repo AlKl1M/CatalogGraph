@@ -1,6 +1,7 @@
 package com.alkl1m.cataloguegraph.service;
 
 import com.alkl1m.cataloguegraph.entity.Product;
+import com.alkl1m.cataloguegraph.entity.Review;
 import com.alkl1m.cataloguegraph.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,5 +55,14 @@ public class ProductService {
                         return Mono.just(false);
                     }
                 });
+    }
+
+    public Mono<Product> addReviewToProduct(String productId, Review review) {
+        return productRepository.findById(productId)
+                .flatMap(product -> {
+                    product.getReviews().add(review);
+                    return productRepository.save(product);
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Product not found")));
     }
 }

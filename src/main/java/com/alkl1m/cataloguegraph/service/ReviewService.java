@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ReviewService {
 
+    private final ProductService productService;
     private final ReviewRepository reviewRepository;
 
     public Flux<Review> getReviewsByProductId(String productId) {
@@ -22,14 +23,18 @@ public class ReviewService {
     }
 
     public Mono<Review> addReview(Review review) {
-        return reviewRepository.save(review);
+        return reviewRepository.save(review)
+                .flatMap(savedReview ->
+                        productService.addReviewToProduct(review.getProductId(), savedReview)
+                                .thenReturn(savedReview)
+                );
     }
 
-    public Mono<Review> updateReview(String id, Review updatedReview) {
+    public Mono<Review> updateReview(String id, Integer rating, String comment) {
         return reviewRepository.findById(id)
                 .flatMap(existingReview -> {
-                    existingReview.setRating(updatedReview.getRating());
-                    existingReview.setComment(updatedReview.getComment());
+                    existingReview.setRating(rating);
+                    existingReview.setComment(comment);
                     return reviewRepository.save(existingReview);
                 })
                 .switchIfEmpty(Mono.error(new RuntimeException("Review not found")));
