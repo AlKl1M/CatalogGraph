@@ -14,8 +14,10 @@ public class ReviewService {
     private final ProductService productService;
     private final ReviewRepository reviewRepository;
 
-    public Flux<Review> getReviewsByProductId(String productId) {
-        return reviewRepository.findByProductId(productId);
+    public Flux<Review> getReviewsByProductId(String productId, int page, int size) {
+        return reviewRepository.findByProductId(productId)
+                .skip((long) page * size)
+                .take(size);
     }
 
     public Mono<Review> getReviewById(String id) {

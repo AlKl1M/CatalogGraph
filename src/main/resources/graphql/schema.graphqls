@@ -20,7 +20,7 @@ type Query {
     getProducts(category: String, minPrice: Float, maxPrice: Float, page: Int, size: Int): [Product]
     getProductById(id: ID!): Product
 
-    getReviews(productId: ID!): [Review]
+    getReviews(productId: ID!, page: Int, size: Int): [Review]
     getReviewById(id: ID!): Review
 }
 
