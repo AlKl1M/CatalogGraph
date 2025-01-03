@@ -65,4 +65,14 @@ public class ProductService {
                 })
                 .switchIfEmpty(Mono.error(new RuntimeException("Product not found")));
     }
+
+    public Mono<Double> getProductAverageRating(String id) {
+        return productRepository.findById(id)
+                .flatMap(product -> {
+                    double averageRating = product.getReviews().stream()
+                            .mapToInt(Review::getRating)
+                            .average().orElse(0);
+                    return Mono.just(averageRating);
+                });
+    }
 }

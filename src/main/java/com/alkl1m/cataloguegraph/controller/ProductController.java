@@ -59,4 +59,9 @@ public class ProductController {
     public Mono<Boolean> deleteProduct(@Argument String id) {
         return productService.deleteProduct(id);
     }
+
+    @QueryMapping
+    public Mono<Double> getProductAverageRating(@Argument String id) {
+        return productService.getProductAverageRating(id);
+    }
 }
