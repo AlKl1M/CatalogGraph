@@ -9,6 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
+/**
+ * Сущность отзыва.
+ *
+ * @author AlKl1M
+ */
 @Getter
 @Setter
 @AllArgsConstructor

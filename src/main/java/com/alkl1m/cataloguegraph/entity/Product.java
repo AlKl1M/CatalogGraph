@@ -10,10 +10,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Сущность продукта.
+ *
+ * @author AlKl1M
+ */
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "products")
 public class Product {
 
