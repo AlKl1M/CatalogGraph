@@ -64,4 +64,5 @@ public class ProductController {
     public Mono<Double> getProductAverageRating(@Argument String id) {
         return productService.getProductAverageRating(id);
     }
+
 }

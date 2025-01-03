@@ -48,7 +48,7 @@ public class ProductService {
         return productRepository.existsById(id)
                 .switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
                 .flatMap(exist -> {
-                    if (exist) {
+                    if (Boolean.TRUE.equals(exist)) {
                         return productRepository.deleteById(id)
                                 .then(Mono.just(true));
                     } else {
@@ -75,4 +75,5 @@ public class ProductService {
                     return Mono.just(averageRating);
                 });
     }
+
 }

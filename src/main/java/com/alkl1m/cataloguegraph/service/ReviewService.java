@@ -45,7 +45,7 @@ public class ReviewService {
     public Mono<Boolean> deleteReview(String id) {
         return reviewRepository.existsById(id)
                 .flatMap(exists -> {
-                    if (exists) {
+                    if (Boolean.TRUE.equals(exists)) {
                         return reviewRepository.deleteById(id)
                                 .then(Mono.just(true));
                     } else {
@@ -53,4 +53,5 @@ public class ReviewService {
                     }
                 });
     }
+
 }
