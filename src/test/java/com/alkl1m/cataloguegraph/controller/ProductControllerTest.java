@@ -67,16 +67,16 @@ class ProductControllerTest {
     @DisplayName("Должен извлечь продукты по категории")
     void testGetProductsByCategory() {
         String query = """
-            query {
-                getProducts(category: \"Electronics\", page: 0, size: 10) {
-                    id
-                    name
-                    description
-                    price
-                    category
-                }
-            }
-        """;
+                    query {
+                        getProducts(category: \"Electronics\", page: 0, size: 10) {
+                            id
+                            name
+                            description
+                            price
+                            category
+                        }
+                    }
+                """;
 
         webTestClient.post()
                 .uri("/graphql")
@@ -95,15 +95,15 @@ class ProductControllerTest {
         assertNotNull(product);
 
         String query = String.format("""
-            query {
-                getProductById(id: \"%s\") {
-                    id
-                    name
-                    description
-                    price
-                }
-            }
-        """, product.getId());
+                    query {
+                        getProductById(id: \"%s\") {
+                            id
+                            name
+                            description
+                            price
+                        }
+                    }
+                """, product.getId());
 
         webTestClient.post()
                 .uri("/graphql")
@@ -118,16 +118,16 @@ class ProductControllerTest {
     @DisplayName("Должен добавить новый продукт")
     void testAddProduct() {
         String mutation = """
-            mutation {
-                addProduct(name: \"Smartphone\", description: \"Latest model\", price: 999.99, category: \"Electronics\") {
-                    id
-                    name
-                    description
-                    price
-                    category
-                }
-            }
-        """;
+                    mutation {
+                        addProduct(name: \"Smartphone\", description: \"Latest model\", price: 999.99, category: \"Electronics\") {
+                            id
+                            name
+                            description
+                            price
+                            category
+                        }
+                    }
+                """;
 
         webTestClient.post()
                 .uri("/graphql")
@@ -145,10 +145,10 @@ class ProductControllerTest {
         assertNotNull(product);
 
         String mutation = String.format("""
-            mutation {
-                deleteProduct(id: \"%s\")
-            }
-        """, product.getId());
+                    mutation {
+                        deleteProduct(id: \"%s\")
+                    }
+                """, product.getId());
 
         webTestClient.post()
                 .uri("/graphql")
@@ -157,6 +157,71 @@ class ProductControllerTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.data.deleteProduct").isEqualTo(true);
+    }
+
+
+    @Test
+    @DisplayName("Должен обновить продукт")
+    void testUpdateProduct_withValidPayload_ReturnsValidData() {
+        Product product = productRepository.findAll().blockFirst();
+        assertNotNull(product);
+
+        String updatedName = "Updated Laptop";
+        String updatedDescription = "Updated description for the high-end laptop";
+        Double updatedPrice = 1800.0;
+        String updatedCategory = "Electronics";
+
+        String mutation = String.format("""
+                    mutation {
+                        updateProduct(id: \"%s\", name: \"%s\", description: \"%s\", price: %s, category: \"%s\") {
+                            id
+                            name
+                            description
+                            price
+                            category
+                        }
+                    }
+                """, product.getId(), updatedName, updatedDescription, updatedPrice, updatedCategory);
+
+        webTestClient.post()
+                .uri("/graphql")
+                .bodyValue(Map.of("query", mutation))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.data.updateProduct.id").isEqualTo(product.getId())
+                .jsonPath("$.data.updateProduct.name").isEqualTo(updatedName)
+                .jsonPath("$.data.updateProduct.description").isEqualTo(updatedDescription)
+                .jsonPath("$.data.updateProduct.price").isEqualTo(updatedPrice)
+                .jsonPath("$.data.updateProduct.category").isEqualTo(updatedCategory);
+    }
+
+    @Test
+    @DisplayName("Должен извлечь средний рейтинг продукта")
+    void testGetProductAverageRating_withValidPayload_ReturnsValidAgerageRating() {
+        Product product = productRepository.findAll().blockFirst();
+        assertNotNull(product);
+
+        Review review = new Review(null, product.getId(), "User3", 4, "Good", LocalDateTime.now());
+
+        product.getReviews().add(review);
+
+        reviewRepository.save(review).block();
+        productRepository.save(product).block();
+
+        String query = String.format("""
+                    query {
+                        getProductAverageRating(id: \"%s\")
+                    }
+                """, product.getId());
+
+        webTestClient.post()
+                .uri("/graphql")
+                .bodyValue(Map.of("query", query))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.data.getProductAverageRating").isEqualTo(4);
     }
 
 }
