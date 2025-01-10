@@ -1,0 +1,12 @@
+"""
+Мутации для продуктов и отзывов
+"""
+type Mutation {
+    addProduct(name: String!, description: String!, price: Float!, category: String!): Product
+    updateProduct(id: ID!, name: String, description: String, price: Float, category: String): Product
+    deleteProduct(id: ID!): Boolean
+
+    addReview(productId: ID!, author: String!, rating: Int!, comment: String!): Review
+    updateReview(id: ID!, rating: Int, comment: String): Review
+    deleteReview(id: ID!): Boolean
+}

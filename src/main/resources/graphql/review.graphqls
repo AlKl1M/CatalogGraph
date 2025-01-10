@@ -1,0 +1,11 @@
+"""
+Сущность отзыва на продукт
+"""
+type Review {
+    id: ID!
+    productId: ID!
+    author: String!
+    rating: Int!
+    comment: String!
+    createdAt: String!
+}

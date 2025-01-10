@@ -1,0 +1,11 @@
+"""
+Сущность продукта
+"""
+type Product {
+    id: ID!
+    name: String!
+    description: String!
+    price: Float!
+    category: String!
+    reviews: [Review]
+}
