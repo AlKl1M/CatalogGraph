@@ -2,6 +2,8 @@ package com.alkl1m.cataloguegraph.service.impl;
 
 import com.alkl1m.cataloguegraph.entity.Product;
 import com.alkl1m.cataloguegraph.entity.Review;
+import com.alkl1m.cataloguegraph.exception.ProductNotFoundException;
+import com.alkl1m.cataloguegraph.exception.ReviewNotFoundException;
 import com.alkl1m.cataloguegraph.repository.ProductRepository;
 import com.alkl1m.cataloguegraph.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +30,8 @@ public class ProductServiceImpl implements ProductService {
      * @param category категория продуктов (может быть null)
      * @param minPrice минимальная цена продуктов (может быть null)
      * @param maxPrice максимальная цена продуктов (может быть null)
-     * @param page номер страницы для пагинации
-     * @param size количество элементов на странице
+     * @param page     номер страницы для пагинации
+     * @param size     количество элементов на странице
      * @return список продуктов, удовлетворяющих фильтрам
      */
     @Override
@@ -48,10 +50,12 @@ public class ProductServiceImpl implements ProductService {
      *
      * @param id уникальный идентификатор продукта
      * @return продукт с указанным идентификатором
+     * @throws ProductNotFoundException если продукт с указанным идентификатором не найден
      */
     @Override
     public Mono<Product> getProductById(String id) {
-        return productRepository.findById(id);
+        return productRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ProductNotFoundException("Product with id " + id + " not found")));
     }
 
     /**
@@ -68,14 +72,14 @@ public class ProductServiceImpl implements ProductService {
     /**
      * Обновляет информацию о продукте.
      *
-     * @param id уникальный идентификатор продукта
+     * @param id             уникальный идентификатор продукта
      * @param updatedProduct объект с обновленной информацией о продукте
      * @return обновленный продукт
      */
     @Override
     public Mono<Product> updateProduct(String id, Product updatedProduct) {
         return productRepository.findById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+                .switchIfEmpty(Mono.error(new ProductNotFoundException("Product not found")))
                 .flatMap(product -> {
                     product.setName(updatedProduct.getName());
                     product.setPrice(updatedProduct.getPrice());
@@ -94,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Mono<Boolean> deleteProduct(String id) {
         return productRepository.existsById(id)
-                .switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+                .switchIfEmpty(Mono.error(new ProductNotFoundException("Product not found")))
                 .flatMap(exist -> {
                     if (Boolean.TRUE.equals(exist)) {
                         return productRepository.deleteById(id)
@@ -109,7 +113,7 @@ public class ProductServiceImpl implements ProductService {
      * Добавляет отзыв к продукту.
      *
      * @param productId уникальный идентификатор продукта
-     * @param review объект отзыва
+     * @param review    объект отзыва
      * @return обновленный продукт с добавленным отзывом
      */
     @Override
@@ -119,7 +123,7 @@ public class ProductServiceImpl implements ProductService {
                     product.getReviews().add(review);
                     return productRepository.save(product);
                 })
-                .switchIfEmpty(Mono.error(new RuntimeException("Product not found")));
+                .switchIfEmpty(Mono.error(new ProductNotFoundException("Product not found")));
     }
 
     /**
@@ -131,12 +135,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Mono<Double> getProductAverageRating(String id) {
         return productRepository.findById(id)
-                .flatMap(product -> {
-                    double averageRating = product.getReviews().stream()
-                            .mapToInt(Review::getRating)
-                            .average().orElse(0);
-                    return Mono.just(averageRating);
-                });
+                .switchIfEmpty(Mono.error(new ProductNotFoundException("No products found")))
+                .flatMap(product -> Mono.just(product.getReviews().stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElseThrow(() -> new ReviewNotFoundException("No reviews found for the product"))));
     }
 
 }

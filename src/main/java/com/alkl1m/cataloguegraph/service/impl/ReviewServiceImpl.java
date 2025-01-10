@@ -1,6 +1,8 @@
 package com.alkl1m.cataloguegraph.service.impl;
 
 import com.alkl1m.cataloguegraph.entity.Review;
+import com.alkl1m.cataloguegraph.exception.ProductNotFoundException;
+import com.alkl1m.cataloguegraph.exception.ReviewNotFoundException;
 import com.alkl1m.cataloguegraph.repository.ReviewRepository;
 import com.alkl1m.cataloguegraph.service.ProductService;
 import com.alkl1m.cataloguegraph.service.ReviewService;
@@ -80,7 +82,7 @@ public class ReviewServiceImpl implements ReviewService {
                     existingReview.setComment(comment);
                     return reviewRepository.save(existingReview);
                 })
-                .switchIfEmpty(Mono.error(new RuntimeException("Review not found")));
+                .switchIfEmpty(Mono.error(new ReviewNotFoundException("Review not found")));
     }
 
     /**
@@ -92,6 +94,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Mono<Boolean> deleteReview(String id) {
         return reviewRepository.existsById(id)
+                .switchIfEmpty(Mono.error(new ReviewNotFoundException("Review not found")))
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
                         return reviewRepository.deleteById(id)
