@@ -1,0 +1,11 @@
+"""
+Запросы для продуктов и отзывов
+"""
+type Query {
+    getProducts(category: String, minPrice: Float, maxPrice: Float, page: Int, size: Int): [Product]
+    getProductById(id: ID!): Product
+    getProductAverageRating(id: ID!): Float
+
+    getReviews(productId: ID!, page: Int, size: Int): [Review]
+    getReviewById(id: ID!): Review
+}
